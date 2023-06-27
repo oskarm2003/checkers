@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkers</title>
+    <script src="libs/three97.js"></script>
+    <script src="script/game.js"></script>
+    <script src="script/net.js"></script>
+    <script src="script/ui.js"></script>
+    <script src="script/board.js"></script>
+    <script src="script/pawn.js"></script>
+    <script src="script/logic.js"></script>
+    <link rel="stylesheet" href="style/main.css">
+</head>
+
+<body>
+
+
+    <!-- scene div -->
+
+    <h1 id="title1">CHECKERS</h1>
+    <h1 id="title2">CHECKERS</h1>
+
+    <div id="root"></div>
+
+    <!-- login menu -->
+    <div id="login">
+        <h2>Sign in</h2><br />
+        <p>Your username:</p>
+        <input id="username" type="text"><br />
+        <button name="submit" id="submit">search game</button><br />
+        <button name="submit" id="join">private game</button><br />
+        <!-- <button name="reset" id="reset">reset</button> -->
+    </div>
+
+    <div id="win">
+    </div>
+
+    <!-- settings -->
+    <div id="settings">
+        <h3 style="text-align: center; margin: 5%; font-size: 2.5vh;">settings:</h3>
+
+        <label for="highlight">field highlight:</label>
+        <input type="checkbox" name="highllight" id="highlight" checked="true"><br />
+
+        <label for="view">2D view:</label>
+        <input type="checkbox" name="view" id="view"><br />
+
+        <label for="light">ambient light:</label>
+        <input type="checkbox" checked="true" name="light" id="light"><br />
+
+        <label for="theme">theme:</label><br />
+        <select name="theme" id="theme">
+            <option value="0" selected="selected">classic</option>
+            <option value="1">neo</option>
+            <option value="2">halloween</option>
+            <option value="3">noir</option>
+            <option value="4">glitch</option>
+        </select>
+        <br>
+
+        <h3>information:</h3>
+
+        <table>
+            <tr>
+                <td>session type:</td>
+                <td id="sessiontype"></td>
+            </tr>
+            <tr>
+                <td>id:</td>
+                <td id="gameid"></td>
+            </tr>
+            <tr>
+                <td>white:</td>
+                <td id="user1"></td>
+            </tr>
+            <tr>
+                <td>black:</td>
+                <td id="user2"></td>
+            </tr>
+        </table>
+
+    </div>
+
+    <!-- wait_30 -->
+    <div id="wait_30" style="top:-5vh">
+        <p id="msg"><b id="timer"></b></p>
+    </div>
+    <div id="prompt"></div>
+    <script src="script/main.js"></script>
+</body>
+
+</html>

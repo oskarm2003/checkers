@@ -1,0 +1,223 @@
+* {
+    overflow: hidden;
+    margin: 0;
+    font-family: "Fredoka";
+}
+
+@font-face {
+    font-family: "Fredoka";
+    src: url("../fonts/Fredoka-Light.ttf");
+}
+
+@font-face {
+    font-family: "Rubik";
+    src: url("../fonts/Rubik-ExtraBold.ttf");
+}
+
+#title1 {
+    font-family: 'Rubik';
+    position: absolute;
+    font-size: 8vh;
+    font-weight: bold;
+    color: #9b3030;
+    left: 49.5%;
+    transform: translate(-50%);
+    top: 5vh;
+    transition: all 0.5s;
+}
+
+#title2 {
+    font-family: 'Rubik';
+    position: absolute;
+    font-size: 8vh;
+    font-weight: bold;
+    color: white;
+    left: 50%;
+    transform: translate(-50%);
+    top: 5.2vh;
+    transition: all 0.5s;
+}
+
+#root {
+    width: 100vw;
+    height: 100vh;
+}
+
+#login {
+    position: absolute;
+    padding: 1%;
+    top: 30vh;
+    left: 50%;
+    transform: translate(-50%);
+    border: 0.8vh solid #6b0000;
+    color: #6b0000;
+    font-weight: bold;
+    background-color: antiquewhite;
+    text-align: center;
+    border-radius: 10%;
+    height: 18vh;
+    width: 25vh;
+    transition: all 0.5s;
+}
+
+#win {
+    position: absolute;
+    padding: 1%;
+    top: -30vh;
+    left: 50%;
+    transform: translate(-50%);
+    border: 0.8vh solid #6b0000;
+    color: #6b0000;
+    font-weight: bold;
+    background-color: antiquewhite;
+    text-align: center;
+    border-radius: 10%;
+    height: 5vh;
+    width: 20vh;
+    transition: all 0.5s;
+    z-index: 3;
+    /* display: none; */
+}
+
+h2 {
+    font-size: 2.5vh;
+}
+
+p {
+    font-size: 1.5vh;
+    margin-left: 10%;
+    margin-right: 10%;
+}
+
+input {
+    font-size: 1.5vh;
+    margin: 3%;
+    width: 60%
+}
+
+button {
+    font-size: 1.5vh;
+    width: 60%;
+    height: 2vh;
+    margin: 3%;
+}
+
+#hamburger {
+    transition: all 0.5s;
+    width: 3vh;
+    height: 3vh;
+    position: absolute;
+    top: 30%;
+    right: 4%;
+}
+
+#hamburger div {
+    width: 80%;
+    height: 15%;
+    margin: 15%;
+    background-color: #6b0000;
+}
+
+header {
+    text-align: center;
+    position: absolute;
+    top: -10vh;
+    width: 100vw;
+    padding-top: 1vh;
+    padding-bottom: 0;
+    border-bottom: 1vh solid #6b0000;
+    color: #6b0000;
+    padding: 1vh;
+    background-color: antiquewhite;
+    height: 5vh;
+    transition: all 0.5s;
+    z-index: 3;
+}
+
+header h1 {
+    font-weight: normal;
+    font-size: 3vh;
+    margin-top: 0.5vh;
+}
+
+#wait_30 {
+    width: 100vw;
+    height: 2vh;
+    position: absolute;
+    top: 0vh;
+    background-color: #00000080;
+    z-index: 1;
+    text-align: center;
+    transition: all 0.5s;
+    color: white;
+}
+
+#dark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #00000080;
+}
+
+#wait {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 30vh;
+    transform: translate(-10%);
+    color: white;
+    font-size: 3vh;
+}
+
+#loading {
+    position: absolute;
+    top: 35vh;
+    left: 50%;
+    width: 3vh;
+    height: 3vh;
+    transform: translate(-50%);
+}
+
+#settings {
+    transition: all 0.5s;
+    position: absolute;
+    height: 93vh;
+    top: 7.5vh;
+    width: 20vh;
+    background-color: antiquewhite;
+    border-left: 1vh solid #6b0000;
+    right: -25vw;
+    color: #6b0000;
+    text-align: center;
+    z-index: 2;
+}
+
+table {
+    position: relative;
+    font-size: 0.2vh;
+}
+
+div#settings * {
+    margin: 5%;
+    font-size: 2vh;
+}
+
+#settings td {
+    background-color: white;
+    color: black;
+    padding: 1vh;
+    font-size: 1.5vh;
+}
+
+#prompt {
+    position: absolute;
+    font-size: 2vh;
+    color: #6b0000;
+    text-align: center;
+    width: 100vw;
+    z-index: 1;
+    color: white;
+    top: 10vh;
+}
