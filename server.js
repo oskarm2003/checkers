@@ -58,6 +58,7 @@ app.post("/SEND_MOVE", (req, res) => {
             return null
         }
     }
+    res.send(null)
 })
 
 
@@ -91,6 +92,7 @@ app.post("/DESTROY", (req, res) => {
             return 0
         }
     }
+    res.send(null)
 })
 
 //send sessions to client
@@ -169,7 +171,7 @@ async function login(req, res) {
 
     //log into a private session
 
-    else if (data.type = "private") {
+    else if (data.type == "private") {
 
         for (let i = 0; i < sessions.length; i++) {
             if (sessions[i].id == data.id) {
