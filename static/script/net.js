@@ -1,7 +1,6 @@
 class Net {
 
     //join open session
-
     constructor() {
         this.to_send = []
     }
@@ -9,7 +8,7 @@ class Net {
     create_game(session_type, username, id) {
 
         this.data = JSON.stringify({
-            type: session_type,
+            session_type: session_type,
             id: id,
             username: username
         })
@@ -19,9 +18,7 @@ class Net {
             body: this.data
         }
 
-
         fetch("JOIN_GAME", this.options)
-
     }
 
     search_game() {
@@ -31,7 +28,7 @@ class Net {
             player.username = document.getElementById("username").value
 
             this.data = JSON.stringify({
-                type: "open",
+                session_type: "open",
                 username: document.getElementById("username").value
             })
 
@@ -45,11 +42,9 @@ class Net {
                 .then(data => game.login(data))
                 .catch(error => console.log(error))
         }
-
     }
 
     //join private session
-
     join_private() {
 
         if (document.getElementById("username").value.trim().length > 0 && document.getElementById("game_id").value.trim().length > 0) {
@@ -57,7 +52,7 @@ class Net {
             player.username = document.getElementById("username").value
 
             this.data = JSON.stringify({
-                type: "private",
+                session_type: "private",
                 id: document.getElementById("game_id").value,
                 username: document.getElementById("username").value
             })
@@ -76,7 +71,6 @@ class Net {
     }
 
     //search for another player
-
     listen_for_enemy() {
 
         this.data = JSON.stringify({ id: session.id })
@@ -97,7 +91,6 @@ class Net {
     }
 
     //request move
-
     request_move() {
 
         this.await_move = setInterval(() => {
@@ -114,8 +107,10 @@ class Net {
             }
 
             fetch("/REQUEST_MOVE", this.options)
-                .then(response => response.json())
-                .then(data => this.received(data))
+                .then(response => {
+                    if (response.status == 200)
+                        response.json().then(data => this.received(data))
+                })
                 .catch(error => console.log(error))
 
         }, 500)
@@ -123,7 +118,6 @@ class Net {
     }
 
     //move received
-
     async received(data) {
 
         if (data[0] != null) {
@@ -155,29 +149,26 @@ class Net {
     }
 
     //sending move
-
     send_move() {
 
-        this.data = JSON.stringify({
+        const data = JSON.stringify({
             id: session.id,
             move: this.to_send,
             sent: player.username
         })
 
-        this.options = {
+        const options = {
             method: "POST",
-            body: this.data
+            body: data
         }
 
-        fetch("/SEND_MOVE", this.options)
-            .then(data => this.move_sent(data))
+        fetch("/SEND_MOVE", options)
+            .then(() => this.move_sent())
             .catch(error => console.log(error))
     }
 
     //after sending a move
-
     move_sent() {
-
 
         this.to_send = []
         if (gameplay.turn == session.user1) {
@@ -190,7 +181,6 @@ class Net {
         net.request_move()
 
         //start move timeout
-
         clearInterval(game.wait_30)
         game.timer()
 
@@ -211,6 +201,4 @@ class Net {
             .then(data => console.log(data))
             .catch(error => console.log(error))
     }
-
-
 }

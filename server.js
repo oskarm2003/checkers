@@ -4,13 +4,13 @@ var app = express()
 app.use(express.static("static"))
 app.use(express.json())
 app.use(express.text())
-app.use(express.urlencoded({
-    extended: true
-}));
+app.use(express.urlencoded({ extended: true }));
 
 const PORT = 3000
 const sessions = []
+
 let total_logs = 0
+let NEXT_ID = 0
 
 //REQ RES server
 
@@ -18,63 +18,76 @@ let total_logs = 0
 
 app.post("/JOIN_GAME", (req, res) => {
 
-    login(req, res)
-    total_logs += 1
+    const { session_type, username, id } = JSON.parse(req.body)
+    if (session_type == undefined || username == undefined)
+        return res.status(404).send("required data not received")
+
+    const session = login(session_type, username, id)
+    deleteOutdated()
+    total_logs++
+
+    res.setHeader('Content-Type', 'application/json')
+    return res.send(JSON.stringify(session))
 
 })
 
-//response when second user logged in
-
+// check if second player joined
 app.post("/GET_USER", (req, res) => {
 
-    let data = JSON.parse(req.body)
+    const { id } = JSON.parse(req.body)
+    if (id == undefined)
+        return res.status(404).send("required data not received")
 
-    for (let i = 0; i < sessions.length; i++) {
-        if (sessions[i].id == data.id) {
-            if (sessions[i].user2 != null) {
-                res.send(JSON.stringify(sessions[i]))
-                return
-            } else {
-                res.send(JSON.stringify({ msg: 'no enemy found' }))
-                return
-            }
-        }
-    }
+    const session_index = getSessionIndex(id)
+    res.setHeader('Content-Type', 'application/json')
 
-    res.send(JSON.stringify({ msg: 'no game found' }))
+    if (session_index == -1)
+        return res.send(JSON.stringify({ msg: "no game found" }))
+
+    const session = sessions[getSessionIndex(id)]
+
+    // somebody joined
+    if (session.user2 != null)
+        return res.status(200).send(JSON.stringify(session))
+
+    return res.send(JSON.stringify({ msg: "no enemy found" }))
 
 })
 
 
 //receive move from client
-
 app.post("/SEND_MOVE", (req, res) => {
-    let data = JSON.parse(req.body)
-    for (let i = 0; i < sessions.length; i++) {
-        if (sessions[i].id == data.id) {
-            sessions[i].last_sent = data.sent
-            sessions[i].move = data.move
-            res.send(null)
-            return null
-        }
-    }
-    res.send(null)
+
+    let { id, move, sent } = JSON.parse(req.body)
+    if (id == undefined || move == undefined || sent == undefined)
+        return res.status(404).send("required data not received")
+
+    const session_index = getSessionIndex(id)
+    if (session_index == -1)
+        return res.status(404).send("session not found")
+
+    sessions[session_index].last_sent = sent
+    sessions[session_index].move = move
+
+    return res.status(200).end()
 })
 
 
 //send move to client
-
 app.post("/REQUEST_MOVE", (req, res) => {
 
-    data = JSON.parse(req.body)
-    let found = find_move(data)
+    const { id, requests } = JSON.parse(req.body)
+    if (id == undefined || requests == undefined)
+        return res.status(404).send("required data not received")
 
-    if (found == null) {
-        res.send([null])
-    }
-    else {
-        res.send(found)
-    }
+    const session_index = getSessionIndex(id)
+    if (session_index == -1)
+        return res.status(404).send("session not found")
+
+    const session = sessions[session_index]
+    if (session.last_sent != requests && session.move != null)
+        return res.send(JSON.stringify(session.move))
+    return res.status(251).end()
 
 })
 
@@ -82,23 +95,22 @@ app.post("/REQUEST_MOVE", (req, res) => {
 //destroy session
 app.post("/DESTROY", (req, res) => {
 
-    let id = JSON.parse(req.body).id
-    for (let i = 0; i < sessions.length; i++) {
-        if (sessions[i].id == id) {
-            for (let j = i; j < sessions.length - 1; j++) {
-                sessions[j] = sessions[j + 1]
-            }
-            sessions.pop()
-            return 0
-        }
-    }
-    res.send(null)
+    const { id } = JSON.parse(req.body)
+    const session_index = getSessionIndex(id)
+
+    if (session_index == -1)
+        return res.end(404).end()
+
+    sessions[session_index] = sessions[sessions.length]
+    sessions.pop()
+    res.status(200).end()
+
 })
 
 //send sessions to client
 
 app.get("/GET_SESSIONS", (req, res) => {
-    res.send(sessions)
+    res.send(JSON.stringify(sessions))
 })
 
 //info
@@ -114,129 +126,108 @@ app.get("/info", (req, res) => {
 //server listen on port 3000
 
 app.listen(PORT, function () {
-    console.log("start serwera na porcie " + PORT)
+    console.log("server listening on port", PORT)
 })
 
 
 //FUNCTIONALITY
 
 //login users
+function login(session_type, username, id) {
 
-async function login(req, res) {
-
-    let data = JSON.parse(req.body)
+    if (isUserNameTaken(username)) return { taken: true }
 
     //log into an open session
+    if (session_type == "open") {
 
-    if (data.type == "open") {
+        // try to join an open session
+        const session_index = findFreeSessionIndex()
 
-        for (let i = 0; i < sessions.length; i++) {
-            if (sessions[i].type == "open" && sessions[i].user2 == null) {
-                if (sessions[i].user1 == data.username) {
-                    res.send({ taken: true })
-                    return null
-                }
-                sessions[i].user2 = data.username
-                res.send(sessions[i])
-                return null
-            }
+        if (session_index != -1) {
+            sessions[session_index].user2 = username
+            return sessions[session_index]
         }
 
-        //create new open session
-
-
-        let id = id_generator(5)
-        if (data.id != null) id = data.id
-
-        sessions.push({
+        //no session found - create new
+        const session = {
             type: "open",
             time: Date.now(),
-            id: id,
-            user1: data.username,
+            id: createId(),
+            user1: username,
             user2: null,
             move: null,
             last_sent: null
-        })
-
-        let output = null
-
-        for (let i = 0; i < sessions.length; i++) {
-            if (sessions[i].id == id) {
-                output = sessions[i]
-            }
         }
 
-        res.send(output)
+        sessions.push(session)
+        return session
     }
 
     //log into a private session
+    else if (session_type == "private") {
 
-    else if (data.type == "private") {
+        let session_index = getSessionIndex(id)
+        if (sessions[session_index].type != "private") session_index = -1
 
-        for (let i = 0; i < sessions.length; i++) {
-            if (sessions[i].id == data.id) {
-                if (sessions[i].user1 == data.username || sessions[i].user2 == data.username) {
-                    res.send({ taken: true })
-                    return null
-                }
-                if (sessions[i].user2 == null) {
-                    sessions[i].user2 = data.username
-                }
-                res.send(sessions[i])
-                return null
-            }
+        //session found
+        if (session_index != -1) {
+            if (sessions[session_index].user2 == null)
+                sessions[session_index].user2 = username
+            return sessions[session_index]
         }
 
-        //create new private session (id not recognised)
-
-        sessions.push({
+        //session not found - create new
+        const session = {
             type: "private",
             time: Date.now(),
-            id: data.id,
-            user1: data.username,
+            id: id,
+            user1: username,
             user2: null,
             move: null,
             last_sent: null
-        })
-
-        let output = null
-
-        for (let i = 0; i < sessions.length; i++) {
-            if (sessions[i].id == data.id) {
-                output = sessions[i]
-            }
         }
-
-        res.send(output)
+        sessions.push(session)
+        return session
 
     }
-    delete_outdated()
 }
 
-
-//id generator
-
-function id_generator(cuantity) {
-    let alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-    let id = ""
-    for (let i = 0; i < cuantity; i++) {
-        let random = Math.floor(Math.random() * 2)
-        if (random == 0) {
-            id += Math.floor(Math.random() * 10)
-        }
-        else if (random == 1) {
-            id += alphabet[Math.floor(Math.random() * alphabet.length)]
-        }
+// true if taken
+function isUserNameTaken(username) {
+    for (const { user1, user2 } of sessions) {
+        if (user1 == username || user2 == username) return true
     }
-    sessions.forEach((element) => {
-        if (element.id == id) {
-            id_generator(cuantity)
-        }
-    })
-    return id;
+    return false
 }
 
-function delete_outdated() {
+// returns session index if free session available session found
+// returns -1 if every session is full
+function findFreeSessionIndex() {
+    for (let i = 0; i < sessions.length; i++) {
+        if (sessions[i].type != "open") continue
+        if (sessions[i].user2 == null) return i
+    }
+    return -1
+}
+
+// returns session index of session with given id
+// returns -1 if not found
+function getSessionIndex(id) {
+    for (let i = 0; i < sessions.length; i++) {
+        if (sessions[i].id == id) return i
+    }
+    return -1
+}
+
+// get unique id
+function createId() {
+    for (let { id } of sessions) {
+        if (id == NEXT_ID) NEXT_ID++
+    }
+    return NEXT_ID++
+}
+
+function deleteOutdated() {
     for (let i = 0; i < sessions.length; i++) {
         let now = Date.now()
         if (now - sessions[i].time > 10000 && sessions[i].user2 == null) {
@@ -248,16 +239,16 @@ function delete_outdated() {
     }
 }
 
-//get move from the specific session
+// //get move from the specific session
 
-function find_move(data) {
+// function findMove(data) {
 
-    for (let i = 0; i < sessions.length; i++) {
-        if (sessions[i].id == data.id && sessions[i].move != null) {
-            if (sessions[i].last_sent != data.requests) {
-                return sessions[i].move
-            }
-        }
-    }
-    return null
-}
+//     for (let i = 0; i < sessions.length; i++) {
+//         if (sessions[i].id == data.id && sessions[i].move != null) {
+//             if (sessions[i].last_sent != data.requests) {
+//                 return sessions[i].move
+//             }
+//         }
+//     }
+//     return null
+// }

@@ -30,7 +30,6 @@ class Board {
             color: 0x000000,
             specular: 0x0f0f0f,
             shininess: 60,
-            map: new THREE.TextureLoader().load("images/wood.jpg"),
             side: THREE.DoubleSide,
         })
 

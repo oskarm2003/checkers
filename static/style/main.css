@@ -100,6 +100,7 @@ button {
     width: 60%;
     height: 2vh;
     margin: 3%;
+    cursor: pointer;
 }
 
 #hamburger {
@@ -109,6 +110,7 @@ button {
     position: absolute;
     top: 30%;
     right: 4%;
+    cursor: pointer;
 }
 
 #hamburger div {
@@ -220,4 +222,8 @@ div#settings * {
     z-index: 1;
     color: white;
     top: 10vh;
+}
+
+input[type="checkbox"] {
+    cursor: pointer;
 }

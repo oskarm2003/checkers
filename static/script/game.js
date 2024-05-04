@@ -45,15 +45,10 @@ class Game {
         })
 
         this.board = new Board(this.chessboard, this.scene, this.pawns)
-
         this.camera.position.set(0, 600, 1200)
-
         this.camera.lookAt(this.scene.position)
-
         this.render()
-
         this.raycaster()
-
         this.change_settings()
 
     }
@@ -63,13 +58,11 @@ class Game {
     render = () => {
 
         requestAnimationFrame(this.render);
-
         this.renderer.render(this.scene, this.camera);
 
         if (gameplay.started == false) {
             this.board.container.rotateY(Math.PI / 1500);
         }
-
     }
 
 
